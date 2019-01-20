@@ -1,6 +1,9 @@
 package com.uoa.di.csr.api.converter;
 
-import com.uoa.di.csr.api.domain.base.*;
+import com.uoa.di.csr.api.domain.base.ServiceRequest;
+import com.uoa.di.csr.api.domain.base.ServiceRequestWithActivity;
+import com.uoa.di.csr.api.domain.base.ServiceRequestWithActivityAndSsa;
+import com.uoa.di.csr.api.domain.base.ServiceRequestWithSsa;
 import com.uoa.di.csr.api.model.csv.base.ServiceRequestCsv;
 import com.uoa.di.csr.api.model.csv.base.ServiceRequestCsvWithActivity;
 import com.uoa.di.csr.api.model.csv.base.ServiceRequestCsvWithActivityAndSsa;
@@ -23,7 +26,7 @@ public class ServiceRequestConverter implements Function<ServiceRequestCsv, Serv
     public ServiceRequest apply(ServiceRequestCsv serviceRequestCsv) {
         ServiceRequest serviceRequest = new ServiceRequest();
         serviceRequest.setSrNumber(serviceRequestCsv.getServiceRequestNumber());
-        serviceRequest.setSrType(ServiceRequestType.reverseValue(serviceRequestCsv.getServiceRequestType()));
+        serviceRequest.setSrType(serviceRequestCsv.getServiceRequestType());
         serviceRequest.setCreationDateTime(safeParse(serviceRequestCsv.getCreationDateTime(), LocalDateTime::parse));
         serviceRequest.setSrStatus(serviceRequestCsv.getStatus());
         serviceRequest.setStreetAddress(serviceRequestCsv.getStreetAddress());

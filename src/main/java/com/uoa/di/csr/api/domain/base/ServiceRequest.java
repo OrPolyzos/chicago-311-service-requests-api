@@ -27,7 +27,7 @@ public class ServiceRequest {
     protected String srNumber;
 
     @Field(value = "sr_type")
-    protected ServiceRequestType srType;
+    protected String srType;
 
     @Field(value = "sr_status")
     protected String srStatus;

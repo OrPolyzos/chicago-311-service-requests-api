@@ -10,8 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ServiceRequestCsvController {
 
+    private final SpecificServiceRequestResolver serviceRequestResolver;
+
     @Autowired
-    private SpecificServiceRequestResolver serviceRequestResolver;
+    public ServiceRequestCsvController(SpecificServiceRequestResolver serviceRequestResolver) {
+        this.serviceRequestResolver = serviceRequestResolver;
+    }
 
     @GetMapping("load-service-requests/{csvFileName}")
     public synchronized ResponseEntity loadServiceRequests(@PathVariable("csvFileName") String csvFileName) {

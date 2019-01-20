@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 @Getter
 @Setter
-@Document(collection = "service_requests")
+@Document(collection = "service_requests", value = "service_requests")
 public class AbandonedVehicleRequest extends ServiceRequestWithActivityAndSsa {
 
     @Field(value = "licence_plate")
