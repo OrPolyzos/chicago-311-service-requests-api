@@ -1,6 +1,7 @@
 package com.uoa.di.csr.api.repository;
 
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
+import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerDay;
 import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -24,7 +25,7 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
 
 
     @Override
-    public List<TotalServiceRequestsPerType> getServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public List<TotalServiceRequestsPerType> getTotalServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         MatchOperation matchOperation = match(where("creationDateTime").gt(startDateTime).andOperator(where("creationDateTime").lt(endDateTime)));
         GroupOperation groupOperation = group("srType").count().as("totalServiceRequests");
         ProjectionOperation projectionOperation = project("totalServiceRequests").and("srType").previousOperation();
@@ -35,6 +36,25 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
                 projectionOperation,
                 sort(Sort.Direction.DESC, "totalServiceRequests"));
         AggregationResults<TotalServiceRequestsPerType> groupResults = mongoTemplate.aggregate(agg, ServiceRequest.class, TotalServiceRequestsPerType.class);
+        return groupResults.getMappedResults();
+    }
+
+    @Override
+    public List<TotalServiceRequestsPerDay> getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        MatchOperation matchOperation = match(where("srType").is(serviceRequestType).andOperator(where("creationDateTime").gt(startDateTime), where("creationDateTime").lt(endDateTime)));
+        ProjectionOperation projectionOperation = project()
+                .andExpression("year(creationDateTime)").as("year")
+                .andExpression("month(creationDateTime)").as("month")
+                .andExpression("dayOfMonth(creationDateTime)").as("day");
+        GroupOperation groupOperation = group(fields().and("year").and("month").and("day"))
+                .count().as("totalServiceRequests");
+
+        Aggregation agg = newAggregation(
+                matchOperation,
+                projectionOperation,
+                groupOperation,
+                sort(Sort.Direction.DESC, "totalServiceRequests"));
+        AggregationResults<TotalServiceRequestsPerDay> groupResults = mongoTemplate.aggregate(agg, ServiceRequest.class, TotalServiceRequestsPerDay.class);
         return groupResults.getMappedResults();
     }
 

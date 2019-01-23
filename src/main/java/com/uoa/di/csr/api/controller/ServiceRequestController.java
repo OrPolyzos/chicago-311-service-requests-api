@@ -1,6 +1,7 @@
 package com.uoa.di.csr.api.controller;
 
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
+import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerDay;
 import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerType;
 import com.uoa.di.csr.api.service.ServiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,15 @@ public class ServiceRequestController {
     }
 
 
-    @GetMapping("/total-requests-per-type")
-    public List<TotalServiceRequestsPerType> getByType(@RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-                                                       @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+    @GetMapping("/total-requests-per-type-by-date")
+    public List<TotalServiceRequestsPerType> getPerTypeByDateIn(@RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return serviceRequestService.getServiceRequestsPerTypeByCreationDateTimeInRange(startDate, endDate);
+    }
+
+    @GetMapping("/total-requests-per-day-by-type-and-date")
+    public List<TotalServiceRequestsPerDay> getPerDayByTypeAndDateIn(@RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        return serviceRequestService.getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange("Abandoned Vehicle Complaint", startDate, endDate);
     }
 }

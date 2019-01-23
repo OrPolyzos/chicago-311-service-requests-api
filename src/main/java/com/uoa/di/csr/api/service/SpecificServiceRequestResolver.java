@@ -5,7 +5,6 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import com.uoa.di.csr.api.converter.*;
-import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.csv.*;
 import com.uoa.di.csr.api.model.csv.base.ServiceRequestCsv;
 import org.slf4j.Logger;
@@ -24,13 +23,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class SpecificServiceRequestResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpecificServiceRequestResolver.class);
-
-    private static final int MILLISECONDS_TO_WAIT = 5;
 
     private static final String ABANDONED_VEHICLES = "abandoned-vehicles";
     private static final String GARBAGE_CARTS = "garbage-carts";
@@ -90,81 +88,44 @@ public class SpecificServiceRequestResolver {
             switch (csvFileName) {
                 case ABANDONED_VEHICLES:
                     List<AbandonedVehicleCsv> abandonedVehicleCsvList = transformServiceRequests(csvFileName, AbandonedVehicleCsv.class).parse();
-                    abandonedVehicleCsvList
-                            .stream()
-                            .map(abandonedVehicleConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(abandonedVehicleCsvList.stream().map(abandonedVehicleConverter).collect(Collectors.toList()));
                     break;
                 case GARBAGE_CARTS:
                     List<GarbageCartCsv> garbageCartCsvList = transformServiceRequests(csvFileName, GarbageCartCsv.class).parse();
-                    garbageCartCsvList
-                            .stream()
-                            .map(garbageCartConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(garbageCartCsvList.stream().map(garbageCartConverter).collect(Collectors.toList()));
                     break;
                 case RODENT_BAITING:
                     List<RodentBaitingCsv> rodentBaitingCsvList = transformServiceRequests(csvFileName, RodentBaitingCsv.class).parse();
-                    rodentBaitingCsvList
-                            .stream()
-                            .map(rodentBaitingConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(rodentBaitingCsvList.stream().map(rodentBaitingConverter).collect(Collectors.toList()));
                     break;
                 case POT_HOLES:
                     List<PotHoleCsv> potHoleCsvList = transformServiceRequests(csvFileName, PotHoleCsv.class).parse();
-                    potHoleCsvList
-                            .stream()
-                            .map(potHolesConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(potHoleCsvList.stream().map(potHolesConverter).collect(Collectors.toList()));
                     break;
                 case GRAFFITI_REMOVAL:
                     List<GraffitiRemovalCsv> graffitiRemovalCsvList = transformServiceRequests(csvFileName, GraffitiRemovalCsv.class).parse();
-                    graffitiRemovalCsvList
-                            .stream()
-                            .map(graffitiRemovalConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(graffitiRemovalCsvList.stream().map(graffitiRemovalConverter).collect(Collectors.toList()));
                     break;
                 case TREE_DEBRIS:
                     List<TreeDebrisCsv> treeDebrisCsvList = transformServiceRequests(csvFileName, TreeDebrisCsv.class).parse();
-                    treeDebrisCsvList
-                            .stream()
-                            .map(treeDebrisConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(treeDebrisCsvList.stream().map(treeDebrisConverter).collect(Collectors.toList()));
                     break;
                 case TREE_TRIMS:
                     List<TreeTrimsCsv> treeTrimsCsvList = transformServiceRequests(csvFileName, TreeTrimsCsv.class).parse();
-                    treeTrimsCsvList
-                            .stream()
-                            .map(treeTrimsConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(treeTrimsCsvList.stream().map(treeTrimsConverter).collect(Collectors.toList()));
                     break;
                 case SANITATION_CODE:
                     List<SanitationCodeCsv> sanitationCodeCsvList = transformServiceRequests(csvFileName, SanitationCodeCsv.class).parse();
-                    sanitationCodeCsvList
-                            .stream()
-                            .map(sanitationCodeConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(sanitationCodeCsvList.stream().map(sanitationCodeConverter).collect(Collectors.toList()));
                     break;
                 default: //alley-lights-out, street-lights-all-out, street-lights-one-out
                     List<ServiceRequestCsv> serviceRequestCsvList = transformServiceRequests(csvFileName, ServiceRequestCsv.class).parse();
-                    serviceRequestCsvList
-                            .stream()
-                            .map(serviceRequestConverter)
-                            .forEach(this::saveAndWait);
+                    serviceRequestService.saveServiceRequests(serviceRequestCsvList.stream().map(serviceRequestConverter).collect(Collectors.toList()));
             }
             LOG.info("Successfully saved Service Requests");
         });
         return ResponseEntity.ok().build();
     }
-
-    private void saveAndWait(ServiceRequest sR) {
-        try {
-            serviceRequestService.saveServiceRequest(sR);
-            Thread.sleep(MILLISECONDS_TO_WAIT);
-        } catch (Exception ex) {
-            LOG.error("Failed to save Service Request with SrNumber: {}", sR.getSrNumber());
-        }
-    }
-
 
     @SuppressWarnings("unchecked")
     private CsvToBean transformServiceRequests(String csvFileName, Class<? extends ServiceRequestCsv> csvClass) {
