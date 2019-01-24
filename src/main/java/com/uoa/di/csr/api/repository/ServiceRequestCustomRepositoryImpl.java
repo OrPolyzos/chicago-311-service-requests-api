@@ -6,6 +6,8 @@ import com.uoa.di.csr.api.domain.custom.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.time.LocalDate;
@@ -107,6 +109,29 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
                 namingProjectionOperation
         );
         return mongoTemplate.aggregate(aggregation, ServiceRequest.class, AverageCompletionTimePerServiceRequestType.class).getMappedResults();
+    }
+
+    @Override
+    public List<TotalServiceRequestsPerType> getMostCommonServiceRequestTypeInBoundingBox(double x1, double x2, double y1, double y2) {
+        MatchOperation matchOperation = match(where("geoLocation").within(new GeoJsonPolygon(
+                new GeoJsonPoint(x1,y1),
+                new GeoJsonPoint(x1,y2),
+                new GeoJsonPoint(x2,y2),
+                new GeoJsonPoint(x2,y1),
+                new GeoJsonPoint(x1,y1))));
+        GroupOperation groupOperation = group("srType").count().as("totalServiceRequests");
+        ProjectionOperation projectionOperation = project().and("_id").as("srType").andInclude("totalServiceRequests");
+        SortOperation sortOperation = sort(DESC, "totalServiceRequests");
+        LimitOperation limitOperation = limit(1);
+
+        Aggregation aggregation = newAggregation(
+                matchOperation,
+                groupOperation,
+                projectionOperation,
+                sortOperation,
+                limitOperation
+        );
+        return mongoTemplate.aggregate(aggregation,ServiceRequest.class,TotalServiceRequestsPerType.class).getMappedResults();
     }
 
 

@@ -3,6 +3,7 @@ package com.uoa.di.csr.api.domain.base;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -53,13 +54,8 @@ public class ServiceRequest {
     @Field(value = "community_area")
     protected Integer communityArea;
 
-    @Field(value = "longitude")
-    protected Double longitude;
+    @Field(value = "geo_location")
+    protected GeoJsonPoint geoLocation;
 
-    @Field(value = "latitude")
-    protected Double latitude;
-
-    @Field(value = "location")
-    protected String location;
 
 }

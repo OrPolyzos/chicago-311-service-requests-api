@@ -56,4 +56,11 @@ public class ServiceRequestController {
                                                                                                                                    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return serviceRequestService.getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(startDate, endDate);
     }
+
+    @GetMapping("/most-common-type-in-bounding-box")
+    public List<TotalServiceRequestsPerType> getMostCommonServiceRequestTypeInBoundingBox() {
+        return serviceRequestService.getMostCommonServiceRequestTypeInBoundingBox(-87.6819098521912, -87.5819098521912, 41.76945357682535, 41.86945357682535);
+    }
+
+
 }

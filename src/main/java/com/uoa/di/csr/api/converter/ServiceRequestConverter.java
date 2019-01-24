@@ -11,6 +11,7 @@ import com.uoa.di.csr.api.model.csv.base.ServiceRequestCsvWithSsa;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -37,9 +38,7 @@ public class ServiceRequestConverter implements Function<ServiceRequestCsv, Serv
         serviceRequest.setWard(safeParse(serviceRequestCsv.getWard(), Integer::valueOf));
         serviceRequest.setPoliceDistrict(safeParse(serviceRequestCsv.getPoliceDistrict(), Integer::valueOf));
         serviceRequest.setCommunityArea(safeParse(serviceRequestCsv.getCommunityArea(), Integer::valueOf));
-        serviceRequest.setLongitude(safeParse(serviceRequestCsv.getLongitude(), Double::valueOf));
-        serviceRequest.setLatitude(safeParse(serviceRequestCsv.getLatitude(), Double::valueOf));
-        serviceRequest.setLocation(safeParse(serviceRequestCsv.getLocation(), Function.identity()));
+        serviceRequest.setGeoLocation(new GeoJsonPoint(safeParse(serviceRequestCsv.getLongitude(), Double::valueOf), safeParse(serviceRequestCsv.getLatitude(), Double::valueOf)));
         return serviceRequest;
     }
 
@@ -56,9 +55,7 @@ public class ServiceRequestConverter implements Function<ServiceRequestCsv, Serv
         serviceRequestToPassTheValues.setWard(serviceRequest.getWard());
         serviceRequestToPassTheValues.setPoliceDistrict(serviceRequest.getPoliceDistrict());
         serviceRequestToPassTheValues.setCommunityArea(serviceRequest.getCommunityArea());
-        serviceRequestToPassTheValues.setLongitude(serviceRequest.getLongitude());
-        serviceRequestToPassTheValues.setLatitude(serviceRequest.getLatitude());
-        serviceRequestToPassTheValues.setLocation(serviceRequest.getLocation());
+        serviceRequestToPassTheValues.setGeoLocation(serviceRequest.getGeoLocation());
     }
 
     void setActivityAndSsa(ServiceRequestCsvWithActivityAndSsa serviceRequestCsvWithActivityAndSsa, ServiceRequestWithActivityAndSsa serviceRequestWithActivityAndSsa) {
