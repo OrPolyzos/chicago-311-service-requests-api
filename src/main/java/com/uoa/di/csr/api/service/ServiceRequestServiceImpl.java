@@ -1,12 +1,12 @@
 package com.uoa.di.csr.api.service;
 
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
-import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerDay;
-import com.uoa.di.csr.api.domain.custom.TotalServiceRequestsPerType;
+import com.uoa.di.csr.api.domain.custom.*;
 import com.uoa.di.csr.api.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,5 +41,19 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         return serviceRequestRepository.getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(serviceRequestType, startDate, endDate);
     }
 
+    @Override
+    public List<ServiceRequestTypePerZipCodes> getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(LocalDate creationDate) {
+        return serviceRequestRepository.getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(creationDate);
+    }
+
+    @Override
+    public List<WardPerTotalServiceRequests> getThreeLeastCommonWardsByServiceRequestType(String serviceRequestType) {
+        return serviceRequestRepository.getThreeLeastCommonWardsByServiceRequestType(serviceRequestType);
+    }
+
+    @Override
+    public List<AverageCompletionTimePerServiceRequestType> getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return serviceRequestRepository.getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(startDateTime, endDateTime);
+    }
 
 }
