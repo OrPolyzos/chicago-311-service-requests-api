@@ -1,16 +1,16 @@
-package com.uoa.di.csr.api.domain.custom;
+package com.uoa.di.csr.api.model.response;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class TotalServiceRequestsPerType {
+public class TotalServiceRequestsPerSrType {
 
     private String srType;
     private Long totalServiceRequests;
 
-    public TotalServiceRequestsPerType(String srType, Long totalServiceRequests) {
+    public TotalServiceRequestsPerSrType(String srType, Long totalServiceRequests) {
         this.srType = srType;
         this.totalServiceRequests = totalServiceRequests;
     }

@@ -4,10 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -56,6 +59,10 @@ public class ServiceRequest {
 
     @Field(value = "geo_location")
     protected GeoJsonPoint geoLocation;
+
+    @DBRef(lazy = true)
+    @Field(value = "upvoters_ids")
+    protected List<Citizen> upvotersIds = new ArrayList<>();
 
 
 }

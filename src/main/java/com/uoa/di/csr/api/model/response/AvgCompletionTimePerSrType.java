@@ -1,4 +1,4 @@
-package com.uoa.di.csr.api.domain.custom;
+package com.uoa.di.csr.api.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Getter
 @Setter
-public class AverageCompletionTimePerServiceRequestType {
+public class AvgCompletionTimePerSrType {
 
     @JsonIgnore
     private Double averageCompletionTimeInMillis;
@@ -16,7 +16,7 @@ public class AverageCompletionTimePerServiceRequestType {
 
     private Long averageCompletionTimeInDays;
 
-    public AverageCompletionTimePerServiceRequestType(Double averageCompletionTimeInMillis, String srType) {
+    public AvgCompletionTimePerSrType(Double averageCompletionTimeInMillis, String srType) {
         this.averageCompletionTimeInMillis = averageCompletionTimeInMillis;
         this.srType = srType;
         this.averageCompletionTimeInDays = Duration.ofMillis(averageCompletionTimeInMillis.longValue()).toDays();

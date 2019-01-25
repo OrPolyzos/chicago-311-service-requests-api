@@ -1,4 +1,4 @@
-package com.uoa.di.csr.api.domain.custom;
+package com.uoa.di.csr.api.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class TotalServiceRequestsPerDay {
+public class TotalServiceRequestsPerCreationDay {
 
     @JsonIgnore
     private Integer year;
@@ -18,10 +18,9 @@ public class TotalServiceRequestsPerDay {
     private Integer day;
 
     private Long totalServiceRequests;
-
     private LocalDate creationDay;
 
-    public TotalServiceRequestsPerDay(Integer year, Integer month, Integer day, Long totalServiceRequests) {
+    public TotalServiceRequestsPerCreationDay(Integer year, Integer month, Integer day, Long totalServiceRequests) {
         this.year = year;
         this.month = month;
         this.day = day;

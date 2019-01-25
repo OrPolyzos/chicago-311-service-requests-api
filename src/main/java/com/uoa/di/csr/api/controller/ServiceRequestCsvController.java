@@ -20,7 +20,8 @@ public class ServiceRequestCsvController {
     }
 
     @GetMapping("/load/{csvFileName}")
-    public synchronized ResponseEntity loadServiceRequestsFromCsv(@PathVariable("csvFileName") String csvFileName) {
+    public ResponseEntity loadServiceRequestsFromCsv(@PathVariable("csvFileName") String csvFileName) {
         return serviceRequestResolver.parseAndLoadFromCsv(csvFileName);
     }
+
 }
