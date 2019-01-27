@@ -2,8 +2,11 @@ package com.uoa.di.csr.api.service;
 
 import com.uoa.di.csr.api.domain.base.Citizen;
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
+import com.uoa.di.csr.api.exception.NotFoundException;
 import com.uoa.di.csr.api.model.response.*;
 import com.uoa.di.csr.api.repository.ServiceRequestRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,8 @@ import java.util.List;
 
 @Service
 public class ServiceRequestServiceImpl implements ServiceRequestService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceRequestServiceImpl.class);
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
@@ -32,16 +37,18 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     @Override
     public void saveServiceRequests(List<ServiceRequest> serviceRequests) {
-        serviceRequestRepository.saveAll(serviceRequests);
+        LOG.info("Started saving service requests...");
+        serviceRequestRepository.saveAllServiceRequests(serviceRequests);
+        LOG.info("Successfully saved service requests.");
     }
 
     @Override
-    public ServiceRequest getById(String serviceRequestId) throws Exception {
-        return serviceRequestRepository.findById(serviceRequestId).orElseThrow(() -> new Exception("Not found"));
+    public ServiceRequest getById(String serviceRequestId) {
+        return serviceRequestRepository.findById(serviceRequestId).orElseThrow(() -> new NotFoundException(serviceRequestId));
     }
 
     @Override
-    public boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId) throws Exception {
+    public boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId) {
         ServiceRequest serviceRequest = getById(serviceRequestId);
         if (serviceRequest.getUpvotersIds().contains(citizen.getCitizenId())) {
             return false;

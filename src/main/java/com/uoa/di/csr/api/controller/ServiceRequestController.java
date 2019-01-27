@@ -30,7 +30,7 @@ public class ServiceRequestController {
 
 
     @PostMapping("/{serviceRequestId}/upvote")
-    public boolean upvoteServiceRequest(@PathVariable("serviceRequestId") String serviceRequestId) throws Exception {
+    public boolean upvoteServiceRequest(@PathVariable("serviceRequestId") String serviceRequestId) {
         return serviceRequestService.upvoteServiceRequest(sessionHelper.getSessionCitizen(), serviceRequestId);
     }
 

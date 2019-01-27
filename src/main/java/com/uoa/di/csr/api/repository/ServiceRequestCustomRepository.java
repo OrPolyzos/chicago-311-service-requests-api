@@ -1,5 +1,6 @@
 package com.uoa.di.csr.api.repository;
 
+import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
 
 import java.time.LocalDate;
@@ -7,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ServiceRequestCustomRepository {
+
+    void saveAllServiceRequests(List<ServiceRequest> serviceRequests);
 
     List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
 

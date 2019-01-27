@@ -16,9 +16,9 @@ public interface ServiceRequestService {
 
     void saveServiceRequests(List<ServiceRequest> serviceRequests);
 
-    ServiceRequest getById(String serviceRequestId) throws Exception;
+    ServiceRequest getById(String serviceRequestId);
 
-    boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId) throws Exception;
+    boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId);
 
     List<ServiceRequest> getServiceRequestsByTypeLike(String serviceRequestType);
 

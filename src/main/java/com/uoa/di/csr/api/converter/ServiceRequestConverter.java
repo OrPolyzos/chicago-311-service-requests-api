@@ -38,7 +38,11 @@ public class ServiceRequestConverter implements Function<ServiceRequestCsv, Serv
         serviceRequest.setWard(safeParse(serviceRequestCsv.getWard(), Integer::valueOf));
         serviceRequest.setPoliceDistrict(safeParse(serviceRequestCsv.getPoliceDistrict(), Integer::valueOf));
         serviceRequest.setCommunityArea(safeParse(serviceRequestCsv.getCommunityArea(), Integer::valueOf));
-        serviceRequest.setGeoLocation(new GeoJsonPoint(safeParse(serviceRequestCsv.getLongitude(), Double::valueOf), safeParse(serviceRequestCsv.getLatitude(), Double::valueOf)));
+        Double longitude = safeParse(serviceRequestCsv.getLongitude(), Double::valueOf);
+        Double latitude = safeParse(serviceRequestCsv.getLatitude(), Double::valueOf);
+        if (longitude != null && latitude != null) {
+            serviceRequest.setGeoLocation(new GeoJsonPoint(longitude, latitude));
+        }
         return serviceRequest;
     }
 

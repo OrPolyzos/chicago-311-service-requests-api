@@ -4,6 +4,7 @@ import com.uoa.di.csr.api.converter.MongoDateConverter;
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
@@ -31,6 +32,12 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
         this.mongoDateConverter = mongoDateConverter;
     }
 
+    @Override
+    public void saveAllServiceRequests(List<ServiceRequest> serviceRequests) {
+        BulkOperations bulkOperations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, ServiceRequest.class);
+        serviceRequests.forEach(bulkOperations::insert);
+        bulkOperations.execute();
+    }
 
     @Override
     public List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {

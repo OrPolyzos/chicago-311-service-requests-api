@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 public class SpecificServiceRequestResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpecificServiceRequestResolver.class);
-
     private static final String ABANDONED_VEHICLES = "abandoned-vehicles";
     private static final String GARBAGE_CARTS = "garbage-carts";
     private static final String RODENT_BAITING = "rodent-baiting";
@@ -38,7 +37,6 @@ public class SpecificServiceRequestResolver {
     private static final String TREE_DEBRIS = "tree-debris";
     private static final String TREE_TRIMS = "tree-trims";
     private static final String SANITATION_CODE = "sanitation-code";
-
 
     private static String CSV_FILE_EXTENSION = ".csv";
 
@@ -83,44 +81,43 @@ public class SpecificServiceRequestResolver {
 
     @SuppressWarnings("unchecked")
     public synchronized ResponseEntity<String> parseAndLoadFromCsv(String csvFileName) {
+        LOG.info("Started parsing...");
         CompletableFuture.runAsync(() -> {
             if (csvFileName.contains(ABANDONED_VEHICLES)) {
-                List<AbandonedVehicleCsv> abandonedVehicleCsvList = transformServiceRequests(csvFileName, AbandonedVehicleCsv.class).parse();
+                List<AbandonedVehicleCsv> abandonedVehicleCsvList = extractServiceRequestsCsv(csvFileName, AbandonedVehicleCsv.class).parse();
                 serviceRequestService.saveServiceRequests(abandonedVehicleCsvList.stream().map(abandonedVehicleConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(GARBAGE_CARTS)) {
-                List<GarbageCartCsv> garbageCartCsvList = transformServiceRequests(csvFileName, GarbageCartCsv.class).parse();
+                List<GarbageCartCsv> garbageCartCsvList = extractServiceRequestsCsv(csvFileName, GarbageCartCsv.class).parse();
                 serviceRequestService.saveServiceRequests(garbageCartCsvList.stream().map(garbageCartConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(RODENT_BAITING)) {
-                List<RodentBaitingCsv> rodentBaitingCsvList = transformServiceRequests(csvFileName, RodentBaitingCsv.class).parse();
+                List<RodentBaitingCsv> rodentBaitingCsvList = extractServiceRequestsCsv(csvFileName, RodentBaitingCsv.class).parse();
                 serviceRequestService.saveServiceRequests(rodentBaitingCsvList.stream().map(rodentBaitingConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(POT_HOLES)) {
-                List<PotHoleCsv> potHoleCsvList = transformServiceRequests(csvFileName, PotHoleCsv.class).parse();
+                List<PotHoleCsv> potHoleCsvList = extractServiceRequestsCsv(csvFileName, PotHoleCsv.class).parse();
                 serviceRequestService.saveServiceRequests(potHoleCsvList.stream().map(potHolesConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(GRAFFITI_REMOVAL)) {
-                List<GraffitiRemovalCsv> graffitiRemovalCsvList = transformServiceRequests(csvFileName, GraffitiRemovalCsv.class).parse();
+                List<GraffitiRemovalCsv> graffitiRemovalCsvList = extractServiceRequestsCsv(csvFileName, GraffitiRemovalCsv.class).parse();
                 serviceRequestService.saveServiceRequests(graffitiRemovalCsvList.stream().map(graffitiRemovalConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(TREE_DEBRIS)) {
-                List<TreeDebrisCsv> treeDebrisCsvList = transformServiceRequests(csvFileName, TreeDebrisCsv.class).parse();
+                List<TreeDebrisCsv> treeDebrisCsvList = extractServiceRequestsCsv(csvFileName, TreeDebrisCsv.class).parse();
                 serviceRequestService.saveServiceRequests(treeDebrisCsvList.stream().map(treeDebrisConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(TREE_TRIMS)) {
-                List<TreeTrimsCsv> treeTrimsCsvList = transformServiceRequests(csvFileName, TreeTrimsCsv.class).parse();
+                List<TreeTrimsCsv> treeTrimsCsvList = extractServiceRequestsCsv(csvFileName, TreeTrimsCsv.class).parse();
                 serviceRequestService.saveServiceRequests(treeTrimsCsvList.stream().map(treeTrimsConverter).collect(Collectors.toList()));
             } else if (csvFileName.contains(SANITATION_CODE)) {
-                List<SanitationCodeCsv> sanitationCodeCsvList = transformServiceRequests(csvFileName, SanitationCodeCsv.class).parse();
+                List<SanitationCodeCsv> sanitationCodeCsvList = extractServiceRequestsCsv(csvFileName, SanitationCodeCsv.class).parse();
                 serviceRequestService.saveServiceRequests(sanitationCodeCsvList.stream().map(sanitationCodeConverter).collect(Collectors.toList()));
             } else {
                 //alley-lights-out, street-lights-all-out, street-lights-one-out
-                List<ServiceRequestCsv> serviceRequestCsvList = transformServiceRequests(csvFileName, ServiceRequestCsv.class).parse();
+                List<ServiceRequestCsv> serviceRequestCsvList = extractServiceRequestsCsv(csvFileName, ServiceRequestCsv.class).parse();
                 serviceRequestService.saveServiceRequests(serviceRequestCsvList.stream().map(serviceRequestConverter).collect(Collectors.toList()));
             }
-            LOG.info("Successfully saved Service Requests");
         });
         return ResponseEntity.ok().build();
     }
 
     @SuppressWarnings("unchecked")
-    private CsvToBean transformServiceRequests(String csvFileName, Class<? extends ServiceRequestCsv> csvClass) {
-        LOG.info("Starting parsing...");
+    private CsvToBean extractServiceRequestsCsv(String csvFileName, Class<? extends ServiceRequestCsv> csvClass) {
         Path path = new File(csvBaseFolder.concat(csvFileName).concat(CSV_FILE_EXTENSION)).toPath();
         BufferedReader bufferedReader = null;
         try {
