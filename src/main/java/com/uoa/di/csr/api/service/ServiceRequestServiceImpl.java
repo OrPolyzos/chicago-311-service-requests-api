@@ -3,8 +3,6 @@ package com.uoa.di.csr.api.service;
 import com.uoa.di.csr.api.domain.base.Citizen;
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
-import com.uoa.di.csr.api.repository.CitizenIdPerTotalUpvotes;
-import com.uoa.di.csr.api.repository.CitizenRepository;
 import com.uoa.di.csr.api.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +18,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private CitizenRepository citizenRepository;
+    private CitizenService citizenService;
 
     @Override
     public List<ServiceRequest> findAll() {
@@ -45,59 +43,69 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     public boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId) throws Exception {
         ServiceRequest serviceRequest = getById(serviceRequestId);
-        if (serviceRequest.getUpvotersIds().stream().anyMatch(srCitizen -> srCitizen.getCitizenId().equals(citizen.getCitizenId()))) {
+        if (serviceRequest.getUpvotersIds().contains(citizen.getCitizenId())) {
             return false;
         }
-        citizen.getServiceRequestsIds().add(serviceRequest);
-        serviceRequest.getUpvotersIds().add(citizen);
-        citizenRepository.save(citizen);
+        citizen.getUpvotedSrIds().add(serviceRequestId);
+        citizen.getUpvotedWards().add(serviceRequest.getWard());
+        serviceRequest.getUpvotersIds().add(citizen.getCitizenId());
+        serviceRequest.getUpvotersTelephoneNumbers().add(citizen.getTelephoneNumber());
+        citizenService.saveCitizen(citizen);
         saveServiceRequest(serviceRequest);
         return true;
     }
 
     @Override
-    public List<ServiceRequest> getServiceRequestsByType(String serviceRequestType) {
+    public List<ServiceRequest> getServiceRequestsByTypeLike(String serviceRequestType) {
         return serviceRequestRepository.findAllBySrTypeContainingIgnoreCase(serviceRequestType);
     }
 
     @Override
-    public List<TotalServiceRequestsPerSrType> getServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return serviceRequestRepository.getTotalServiceRequestsPerTypeByCreationDateTimeInRange(startDate, endDate);
+    public List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return serviceRequestRepository.getTotalRequestsPerTypeByCreationDateTimeInRange(startDate, endDate);
     }
 
     @Override
-    public List<TotalServiceRequestsPerCreationDay> getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDate, LocalDateTime endDate) {
-        return serviceRequestRepository.getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(serviceRequestType, startDate, endDate);
+    public List<CreationDayPerTotalRequests> getTotalRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDate, LocalDateTime endDate) {
+        return serviceRequestRepository.getTotalRequestsPerDayByTypeAndCreationDateTimeInRange(serviceRequestType, startDate, endDate);
     }
 
     @Override
-    public List<ZipCodesPerSrType> getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(LocalDate creationDate) {
-        return serviceRequestRepository.getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(creationDate);
+    public List<TypePerZipCodes> getMostCommonRequestTypesPerZipCodesByCreationDate(LocalDate creationDate, Integer limit) {
+        //TODO Should be moved to application properties as default value
+        if (limit == null) limit = 3;
+        return serviceRequestRepository.getMostCommonRequestTypesPerZipCodesByCreationDate(creationDate, limit);
     }
 
     @Override
-    public List<TotalServiceRequestsPerWard> getThreeLeastCommonWardsByServiceRequestType(String serviceRequestType) {
-        return serviceRequestRepository.getThreeLeastCommonWardsByServiceRequestType(serviceRequestType);
+    public List<WardPerTotalRequests> getLeastCommonWardsByType(String serviceRequestType, Integer limit) {
+        //TODO Should be moved to application properties as default value
+        if (limit == null) limit = 3;
+        return serviceRequestRepository.getLeastCommonWardsByType(serviceRequestType, limit);
     }
 
     @Override
-    public List<AvgCompletionTimePerSrType> getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return serviceRequestRepository.getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(startDateTime, endDateTime);
+    public List<AvgTimePerType> getAvgTimePerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return serviceRequestRepository.getAvgTimePerTypeByCreationDateTimeInRange(startDateTime, endDateTime);
     }
 
     @Override
-    public List<TotalServiceRequestsPerSrType> getMostCommonServiceRequestTypeInBoundingBox(double x1, double x2, double y1, double y2) {
-        return serviceRequestRepository.getMostCommonServiceRequestTypeInBoundingBox(x1, x2, y1, y2);
+    public List<TypePerTotalRequests> getMostCommonTypesInBoundingBox(double x1, double x2, double y1, double y2, Integer limit) {
+        //TODO Should be moved to application properties as default value
+        if (limit == null) limit = 1;
+        return serviceRequestRepository.getMostCommonTypesInBoundingBox(x1, x2, y1, y2, limit);
     }
 
     @Override
-    public List<ServiceRequest> getFiftyMostUpvotedServiceRequestsByCreationDate(LocalDate creationDate) {
-        return serviceRequestRepository.getFiftyMostUpvotedServiceRequestsByCreationDate(creationDate);
+    public List<RequestPerTotalUpvotes> getMostUpvotedRequestsByCreationDate(LocalDate creationDate, Integer limit) {
+        //TODO Should be moved to application properties as default value
+        if (limit == null) limit = 50;
+        return serviceRequestRepository.getMostUpvotedRequestsByCreationDate(creationDate, limit);
     }
 
     @Override
-    public List<CitizenIdPerTotalUpvotes> getFiftyMostActiveCitizens() {
-        return serviceRequestRepository.getFiftyMostActiveCitizens();
+    public List<RequestPerSamePhoneNumbersUsed> getRequestsWithSamePhoneNumbersUsed() {
+        return serviceRequestRepository.getRequestsWithSamePhoneNumbersUsed();
     }
 
 }

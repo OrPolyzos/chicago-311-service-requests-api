@@ -1,7 +1,6 @@
 package com.uoa.di.csr.api.repository;
 
 import com.uoa.di.csr.api.converter.MongoDateConverter;
-import com.uoa.di.csr.api.domain.base.Citizen;
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,57 +33,68 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
 
 
     @Override
-    public List<TotalServiceRequestsPerSrType> getTotalServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         MatchOperation matchOperation = match(getLocalDateTimeInRangeCriteria(startDateTime, endDateTime));
-        GroupOperation groupOperation = group("srType").count().as("totalServiceRequests");
-        ProjectionOperation projectionOperation = project("totalServiceRequests").and("srType").previousOperation();
+        GroupOperation groupOperation = group("srType").count().as("totalRequests");
+        ProjectionOperation projectionOperation = project()
+                .andInclude("totalRequests")
+                .and("_id").as("type");
+        SortOperation sortOperation = sort(DESC, "totalRequests");
 
         Aggregation aggregation = newAggregation(
                 matchOperation,
                 groupOperation,
                 projectionOperation,
-                Aggregation.sort(DESC, "totalServiceRequests"));
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TotalServiceRequestsPerSrType.class).getMappedResults();
+                sortOperation);
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TypePerTotalRequests.class).getMappedResults();
     }
 
     @Override
-    public List<TotalServiceRequestsPerCreationDay> getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public List<CreationDayPerTotalRequests> getTotalRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         MatchOperation matchOperation = match(where("srType").is(serviceRequestType).andOperator(getLocalDateTimeInRangeCriteria(startDateTime, endDateTime)));
         ProjectionOperation projectionOperation = project()
                 .andExpression("year(creationDateTime)").as("year")
                 .andExpression("month(creationDateTime)").as("month")
                 .andExpression("dayOfMonth(creationDateTime)").as("day");
         GroupOperation groupOperation = group(fields().and("year").and("month").and("day"))
-                .count().as("totalServiceRequests");
+                .count().as("totalRequests");
 
         Aggregation aggregation = newAggregation(
                 matchOperation,
                 projectionOperation,
                 groupOperation);
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TotalServiceRequestsPerCreationDay.class).getMappedResults();
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, CreationDayPerTotalRequests.class).getMappedResults();
     }
 
     @Override
-    public List<ZipCodesPerSrType> getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(LocalDate creationDay) {
+    public List<TypePerZipCodes> getMostCommonRequestTypesPerZipCodesByCreationDate(LocalDate creationDay, Integer limit) {
         MatchOperation matchOperation = match(getLocalDateTimeInRangeCriteria(creationDay.atStartOfDay(), creationDay.plusDays(1).atStartOfDay()));
         GroupOperation groupOperation = group("srType").addToSet("zipCode").as("zipCodes");
-        ProjectionOperation projectionOperation = project().and("_id").as("srType").and("zipCodes").size().as("zipCodes");
+        ProjectionOperation projectionOperation = project()
+                .and("_id").as("type")
+                .and("zipCodes").size().as("zipCodes");
+        SortOperation sortOperation = sort(DESC, "zipCodes");
+        LimitOperation limitOperation = limit(limit);
+
         Aggregation aggregation = newAggregation(
                 matchOperation,
                 groupOperation,
                 projectionOperation,
-                sort(DESC, "zipCodes"),
-                limit(3));
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, ZipCodesPerSrType.class).getMappedResults();
+                sortOperation,
+                limitOperation);
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TypePerZipCodes.class).getMappedResults();
     }
 
     @Override
-    public List<TotalServiceRequestsPerWard> getThreeLeastCommonWardsByServiceRequestType(String serviceRequestType) {
+    public List<WardPerTotalRequests> getLeastCommonWardsByType(String serviceRequestType, Integer limit) {
         MatchOperation matchOperation = match(where("srType").is(serviceRequestType));
         GroupOperation groupOperation = group("ward").count().as("totalServiceRequests");
-        ProjectionOperation projectionOperation = project().and("_id").as("ward").and("totalServiceRequests").as("totalServiceRequests");
-        SortOperation sortOperation = sort(ASC, "totalServiceRequests");
-        LimitOperation limitOperation = limit(3);
+        ProjectionOperation projectionOperation = project()
+                .and("_id").as("ward")
+                .and("totalServiceRequests").as("totalRequests");
+        SortOperation sortOperation = sort(ASC, "totalRequests");
+        LimitOperation limitOperation = limit(limit);
+
         Aggregation aggregation = newAggregation(
                 matchOperation,
                 groupOperation,
@@ -92,38 +102,43 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
                 sortOperation,
                 limitOperation
         );
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TotalServiceRequestsPerWard.class).getMappedResults();
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, WardPerTotalRequests.class).getMappedResults();
     }
 
     @Override
-    public List<AvgCompletionTimePerSrType> getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public List<AvgTimePerType> getAvgTimePerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         MatchOperation matchOperation = match(getLocalDateTimeInRangeCriteria(startDateTime, endDateTime));
         ProjectionOperation projectionOperation = project()
                 .andInclude("srType")
                 .andExpression("completionDateTime - creationDateTime").as("completionTime");
         GroupOperation groupOperation = group("srType").avg("completionTime").as("averageCompletionTimeInMillis");
-        ProjectionOperation namingProjectionOperation = project().and("_id").as("srType").andInclude("averageCompletionTimeInMillis");
+        ProjectionOperation namingProjectionOperation = project()
+                .and("_id").as("type")
+                .andInclude("averageCompletionTimeInMillis");
+
         Aggregation aggregation = newAggregation(
                 matchOperation,
                 projectionOperation,
                 groupOperation,
                 namingProjectionOperation
         );
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, AvgCompletionTimePerSrType.class).getMappedResults();
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, AvgTimePerType.class).getMappedResults();
     }
 
     @Override
-    public List<TotalServiceRequestsPerSrType> getMostCommonServiceRequestTypeInBoundingBox(double x1, double x2, double y1, double y2) {
+    public List<TypePerTotalRequests> getMostCommonTypesInBoundingBox(double x1, double x2, double y1, double y2, Integer limit) {
         MatchOperation matchOperation = match(where("geoLocation").within(new GeoJsonPolygon(
                 new GeoJsonPoint(x1, y1),
                 new GeoJsonPoint(x1, y2),
                 new GeoJsonPoint(x2, y2),
                 new GeoJsonPoint(x2, y1),
                 new GeoJsonPoint(x1, y1))));
-        GroupOperation groupOperation = group("srType").count().as("totalServiceRequests");
-        ProjectionOperation projectionOperation = project().and("_id").as("srType").andInclude("totalServiceRequests");
-        SortOperation sortOperation = sort(DESC, "totalServiceRequests");
-        LimitOperation limitOperation = limit(1);
+        GroupOperation groupOperation = group("srType").count().as("totalRequests");
+        ProjectionOperation projectionOperation = project()
+                .and("_id").as("type")
+                .andInclude("totalRequests");
+        SortOperation sortOperation = sort(DESC, "totalRequests");
+        LimitOperation limitOperation = limit(limit);
 
         Aggregation aggregation = newAggregation(
                 matchOperation,
@@ -132,29 +147,42 @@ public class ServiceRequestCustomRepositoryImpl implements ServiceRequestCustomR
                 sortOperation,
                 limitOperation
         );
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TotalServiceRequestsPerSrType.class).getMappedResults();
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, TypePerTotalRequests.class).getMappedResults();
     }
 
     @Override
-    public List<ServiceRequest> getFiftyMostUpvotedServiceRequestsByCreationDate(LocalDate creationDate) {
+    public List<RequestPerTotalUpvotes> getMostUpvotedRequestsByCreationDate(LocalDate creationDate, Integer limit) {
         MatchOperation matchOperation = match(getLocalDateTimeInRangeCriteria(creationDate.atStartOfDay(), creationDate.plusDays(1).atStartOfDay()));
-        SortOperation sortOperation = sort(DESC, "upvotersIds");
+        ProjectionOperation projectionOperation = project()
+                .and("srId").as("id")
+                .and("upvotersIds").size().as("totalUpvotes");
+        SortOperation sortOperation = sort(DESC, "totalUpvotes");
+        LimitOperation limitOperation = limit(limit);
         Aggregation aggregation = newAggregation(
                 matchOperation,
+                projectionOperation,
                 sortOperation,
-                limit(50));
-        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, ServiceRequest.class).getMappedResults();
+                limitOperation);
+        return mongoTemplate.aggregate(aggregation, ServiceRequest.class, RequestPerTotalUpvotes.class).getMappedResults();
     }
 
     @Override
-    public List<CitizenIdPerTotalUpvotes> getFiftyMostActiveCitizens() {
-        ProjectionOperation projectionOperation = project().andInclude("citizenId").and("serviceRequestsIds").size().as("totalUpvotes");
-        SortOperation sortOperation = sort(DESC, "totalUpvotes");
-        Aggregation aggregation = newAggregation(
-                projectionOperation,
-                sortOperation,
-                limit(50));
-        return mongoTemplate.aggregate(aggregation, Citizen.class, CitizenIdPerTotalUpvotes.class).getMappedResults();
+    public List<RequestPerSamePhoneNumbersUsed> getRequestsWithSamePhoneNumbersUsed() {
+        ProjectionOperation initialProjection = project()
+                .andInclude("srId")
+                .and("upvotersIds").size().as("totalUpvotes")
+                .and("upvotersTelephoneNumbers").size().as("totalPhoneNumbersUsed");
+        ProjectionOperation expressionProjection = project()
+                .and("srId").as("id")
+                .andExpression("totalUpvotes - totalPhoneNumbersUsed").as("samePhoneNumbersUsed");
+        MatchOperation matchOperation = match(where("samePhoneNumbersUsed").gt(0));
+
+        Aggregation agg = newAggregation(
+                initialProjection,
+                expressionProjection,
+                matchOperation
+        );
+        return mongoTemplate.aggregate(agg, ServiceRequest.class, RequestPerSamePhoneNumbersUsed.class).getMappedResults();
     }
 
 

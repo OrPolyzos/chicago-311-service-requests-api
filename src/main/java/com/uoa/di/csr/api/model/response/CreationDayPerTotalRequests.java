@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class TotalServiceRequestsPerCreationDay {
+public class CreationDayPerTotalRequests {
 
     @JsonIgnore
     private Integer year;
@@ -17,14 +17,14 @@ public class TotalServiceRequestsPerCreationDay {
     @JsonIgnore
     private Integer day;
 
-    private Long totalServiceRequests;
+    private Long totalRequests;
     private LocalDate creationDay;
 
-    public TotalServiceRequestsPerCreationDay(Integer year, Integer month, Integer day, Long totalServiceRequests) {
+    public CreationDayPerTotalRequests(Integer year, Integer month, Integer day, Long totalRequests) {
         this.year = year;
         this.month = month;
         this.day = day;
-        this.totalServiceRequests = totalServiceRequests;
+        this.totalRequests = totalRequests;
         this.creationDay = LocalDate.of(year, month, day);
     }
 }

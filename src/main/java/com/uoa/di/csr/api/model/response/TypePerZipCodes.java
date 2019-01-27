@@ -5,13 +5,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ZipCodesPerSrType {
+public class TypePerZipCodes {
 
-    private String srType;
+    private String type;
     private Integer zipCodes;
 
-    public ZipCodesPerSrType(String srType, Integer zipCodes) {
-        this.srType = srType;
+    public TypePerZipCodes(String type, Integer zipCodes) {
+        this.type = type;
         this.zipCodes = zipCodes;
     }
 }

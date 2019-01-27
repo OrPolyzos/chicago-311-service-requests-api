@@ -21,12 +21,28 @@ public class CitizenFaker {
     @Autowired
     private CitizenRepository citizenRepository;
 
-    public void populateCitizens() {
+    public void populateCitizens(int upvotesLimit) {
+        List<ServiceRequest> serviceRequests = getServiceRequestsAndClearUpvotes();
+        generateCitizens(serviceRequests.size() / 2);
+        List<Citizen> mongoCitizens = citizenRepository.findAll();
+        mongoCitizens.forEach(citizen -> {
+            int serviceRequestsToUpvote = ThreadLocalRandom.current().nextInt(upvotesLimit);
+            IntStream
+                    .range(0, serviceRequestsToUpvote)
+                    .boxed()
+                    .forEach(upvote -> {
+                        ServiceRequest chosen = serviceRequests.get(ThreadLocalRandom.current().nextInt(serviceRequests.size()));
+                        try {
+                            serviceRequestService.upvoteServiceRequest(citizen, chosen.getSrId());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+        });
+    }
+
+    private void generateCitizens(int citizensToGenerate) {
         Faker faker = new Faker();
-        List<ServiceRequest> serviceRequests = serviceRequestService.findAll().stream().peek(serviceRequest -> serviceRequest.getUpvotersIds().clear()).collect(Collectors.toList());
-        serviceRequestService.saveServiceRequests(serviceRequests);
-        int citizensToGenerate = serviceRequests.size() / 2;
-        int upvotesLimit = 5;
         List<Citizen> citizens = IntStream
                 .range(0, citizensToGenerate)
                 .boxed()
@@ -40,20 +56,17 @@ public class CitizenFaker {
                 })
                 .collect(Collectors.toList());
         citizenRepository.saveAll(citizens);
-        List<Citizen> mongoCitizens = citizenRepository.findAll();
-        mongoCitizens.forEach(citizen -> {
-            int serviceRequestsToUpvote = ThreadLocalRandom.current().nextInt(upvotesLimit);
-            IntStream
-                    .range(0, serviceRequestsToUpvote)
-                    .boxed()
-                    .forEach(upvote -> {
-                        ServiceRequest chosen = serviceRequests.get(ThreadLocalRandom.current().nextInt(serviceRequests.size()));
-                        try {
-                            System.out.println(String.format("Upvote: %s", serviceRequestService.upvoteServiceRequest(citizen, chosen.getSrId())));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-        });
+    }
+
+    private List<ServiceRequest> getServiceRequestsAndClearUpvotes() {
+        List<ServiceRequest> serviceRequests = serviceRequestService.findAll()
+                .stream()
+                .peek(serviceRequest -> {
+                    serviceRequest.getUpvotersIds().clear();
+                    serviceRequest.getUpvotersTelephoneNumbers().clear();
+                })
+                .collect(Collectors.toList());
+        serviceRequestService.saveServiceRequests(serviceRequests);
+        return serviceRequests;
     }
 }

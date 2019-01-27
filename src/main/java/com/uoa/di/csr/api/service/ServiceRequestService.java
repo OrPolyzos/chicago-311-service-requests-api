@@ -3,7 +3,6 @@ package com.uoa.di.csr.api.service;
 import com.uoa.di.csr.api.domain.base.Citizen;
 import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
-import com.uoa.di.csr.api.repository.CitizenIdPerTotalUpvotes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,21 +20,22 @@ public interface ServiceRequestService {
 
     boolean upvoteServiceRequest(Citizen citizen, String serviceRequestId) throws Exception;
 
-    List<ServiceRequest> getServiceRequestsByType(String serviceRequestType);
+    List<ServiceRequest> getServiceRequestsByTypeLike(String serviceRequestType);
 
-    List<TotalServiceRequestsPerSrType> getServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDate, LocalDateTime endDate);
+    List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDate, LocalDateTime endDate);
 
-    List<TotalServiceRequestsPerCreationDay> getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDate, LocalDateTime endDate);
+    List<CreationDayPerTotalRequests> getTotalRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDate, LocalDateTime endDate);
 
-    List<ZipCodesPerSrType> getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(LocalDate creationDate);
+    List<TypePerZipCodes> getMostCommonRequestTypesPerZipCodesByCreationDate(LocalDate creationDate, Integer limit);
 
-    List<TotalServiceRequestsPerWard> getThreeLeastCommonWardsByServiceRequestType(String serviceRequestType);
+    List<WardPerTotalRequests> getLeastCommonWardsByType(String serviceRequestType, Integer limit);
 
-    List<AvgCompletionTimePerSrType> getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<AvgTimePerType> getAvgTimePerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    List<TotalServiceRequestsPerSrType> getMostCommonServiceRequestTypeInBoundingBox(double x1, double x2, double y1, double y2);
+    List<TypePerTotalRequests> getMostCommonTypesInBoundingBox(double x1, double x2, double y1, double y2, Integer limit);
 
-    List<ServiceRequest> getFiftyMostUpvotedServiceRequestsByCreationDate(LocalDate creationDate);
+    List<RequestPerTotalUpvotes> getMostUpvotedRequestsByCreationDate(LocalDate creationDate, Integer limit);
 
-    List<CitizenIdPerTotalUpvotes> getFiftyMostActiveCitizens();
+    List<RequestPerSamePhoneNumbersUsed> getRequestsWithSamePhoneNumbersUsed();
+
 }

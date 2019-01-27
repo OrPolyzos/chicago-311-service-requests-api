@@ -1,6 +1,5 @@
 package com.uoa.di.csr.api.repository;
 
-import com.uoa.di.csr.api.domain.base.ServiceRequest;
 import com.uoa.di.csr.api.model.response.*;
 
 import java.time.LocalDate;
@@ -9,19 +8,19 @@ import java.util.List;
 
 public interface ServiceRequestCustomRepository {
 
-    List<TotalServiceRequestsPerSrType> getTotalServiceRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<TypePerTotalRequests> getTotalRequestsPerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    List<TotalServiceRequestsPerCreationDay> getTotalServiceRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<CreationDayPerTotalRequests> getTotalRequestsPerDayByTypeAndCreationDateTimeInRange(String serviceRequestType, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    List<ZipCodesPerSrType> getThreeMostCommonServiceRequestTypesPerZipCodesByCreationDate(LocalDate creationDate);
+    List<TypePerZipCodes> getMostCommonRequestTypesPerZipCodesByCreationDate(LocalDate creationDate, Integer limit);
 
-    List<TotalServiceRequestsPerWard> getThreeLeastCommonWardsByServiceRequestType(String serviceRequestType);
+    List<WardPerTotalRequests> getLeastCommonWardsByType(String serviceRequestType, Integer limit);
 
-    List<AvgCompletionTimePerSrType> getAverageCompletionTimePerServiceRequestTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<AvgTimePerType> getAvgTimePerTypeByCreationDateTimeInRange(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
-    List<TotalServiceRequestsPerSrType> getMostCommonServiceRequestTypeInBoundingBox(double x1, double x2, double y1, double y2);
+    List<TypePerTotalRequests> getMostCommonTypesInBoundingBox(double x1, double x2, double y1, double y2, Integer limit);
 
-    List<ServiceRequest> getFiftyMostUpvotedServiceRequestsByCreationDate(LocalDate creationDate);
+    List<RequestPerTotalUpvotes> getMostUpvotedRequestsByCreationDate(LocalDate creationDate, Integer limit);
 
-    List<CitizenIdPerTotalUpvotes> getFiftyMostActiveCitizens();
+    List<RequestPerSamePhoneNumbersUsed> getRequestsWithSamePhoneNumbersUsed();
 }
