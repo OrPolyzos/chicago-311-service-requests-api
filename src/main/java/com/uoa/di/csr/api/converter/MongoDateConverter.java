@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
 
@@ -12,7 +11,7 @@ import java.util.Date;
 public class MongoDateConverter {
 
     public Date localDateToDate(LocalDate localDate) {
-        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        return Date.from(localDate.atStartOfDay(ZoneOffset.UTC).toInstant());
     }
 
     public Date localDateTimeToDate(LocalDateTime localDateTime) {
